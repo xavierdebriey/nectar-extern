@@ -4,7 +4,7 @@
 
 #### System to monitor a bee hive. 
 
-We are a team of electrical and computer engineers students from **Université Laval** that work in collaboration with [nectar.buzzz](www.nectar.buzz) to build a system that could change the honey industry. Our system can monitored temperature, humidity, weight, sound amplitude and sound frequencies of a bee hive.
+We are a team of electrical and computer engineers students from **Université Laval** that worked in collaboration with [nectar.buzzz](www.nectar.buzz) to build a system that could change the honey industry. Our system can monitor temperature, humidity, weight, sound amplitude and sound frequencies of a bee hive.
 
 Don't hesitate to ask questions.
 
