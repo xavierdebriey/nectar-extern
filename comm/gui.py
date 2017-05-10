@@ -283,7 +283,7 @@ class BeeGui(tk.Frame):
             self.testConnect.destroy()
         else:
             self.write_on_text(">> Connecting to beeOS ...")
-            self.data_queue, self.response_queue = self.s.connect()
+            self.data_queue, self.response_queue, self.log_queue = self.s.connect()
             self.timestamp = time.time()
             self.write_on_text(">> Connected at {}".format(datetime.datetime.fromtimestamp(time.time())))
             self.connectButton.config(text='disconnect')

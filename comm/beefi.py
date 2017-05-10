@@ -82,7 +82,9 @@ class Connect2BeeOS:
 
     def checkBeeOS_(self):
         self.connected_ = False
-        self.send(bytearray([0,0,0,0,0]))
+        self.send(bytearray([0,0,0,0,0])) 
+        while self.ack_queue.qsize() == 0:
+            time.sleep(0.01)
         _ = self.ack_queue.get()
         self.connected_ = True
 
@@ -102,7 +104,7 @@ class Connect2BeeOS:
         self.connect_()
         self.recv_()
         self.checkBeeOS_()
-        return self.data_queue, self.response_queue
+        return self.data_queue, self.response_queue, self.log_queue
 
     def reconnect(self):
         self.enable_ = False
