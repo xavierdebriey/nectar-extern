@@ -36,7 +36,7 @@ def bytes2measures(bytesPackage):
         newMeasure['freqs'] = unpackedMeasure[5:]
         measures.append(newMeasure)
 
-    return newMeasure
+    return measures
 
 def bytes2config(bytesPackage):
     bytesPackageCopy = bytesPackage
