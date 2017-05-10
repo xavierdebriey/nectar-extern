@@ -89,12 +89,15 @@ class BeeGui(tk.Frame):
     def monitoring(self):
         if self.s.isConnected() and self.data_queue.qsize() > 0:
             data = self.data_queue.get()
-            nb_data = len(data)
+            data_size = len(data)
             if self.archive:
                 for d in data:
                     storeMeasuresInDatabase(self.db, d, self.timestamp)
             self.write_on_text("{} - {} : {}".format(datetime.datetime.fromtimestamp(self.timestamp+data[0]['timestamp']), 
-                                                     nb_data, data))
+                                                     data_size, data))
+        if self.s.isConnected() and self.log_queue.qsize() > 0:
+            log = self.log_queue.get()
+            self.write_on_text("*LOG* {}".format(log))
 
         self.after(10, self.monitoring)
 

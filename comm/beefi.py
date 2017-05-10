@@ -33,6 +33,7 @@ class Connect2BeeOS:
         # Queues
         self.data_queue = q.Queue()
         self.response_queue = q.Queue()
+        self.log_queue = q.Queue()
         self.ack_queue = q.Queue()
 
         # Thread Safe Lock
@@ -65,6 +66,8 @@ class Connect2BeeOS:
                         self.data_queue.put(recv['content'])
                     elif recv['type_'] == 'res':
                         self.response_queue.put(recv['content'])
+                    elif recv['type_'] == 'log':
+                        self.log_queue.put(recv['content'])
                     elif recv['type_'] == 'ack':
                         self.ack_queue.put(recv['content'])
 

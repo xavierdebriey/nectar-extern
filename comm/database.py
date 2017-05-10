@@ -12,6 +12,8 @@ def getTypeOfPackage(package):
         return 'data'
     elif chr(package[0]) == 'r':
         return 'res'
+    elif chr(package[0]) == 'l':
+        return 'log'
     elif chr(package[0]) == 'a':
         return 'ack'
 
@@ -49,6 +51,10 @@ def bytes2config(bytesPackage):
 
     return config
 
+def bytes2log(bytesPackage):
+    bytesPackageCopy = bytesPackage[1:-1]
+    return bytesPackageCopy.decode("ascii")
+
 def getPackagesFromBytes(bytesPackage):
     bytesPackageCopy = bytesPackage
     packages = []
@@ -64,6 +70,10 @@ def getPackagesFromBytes(bytesPackage):
         elif typeOfPackage == 'res':
             contentOfPackage = bytes2config(bytesPackageCopy[:SIZEOFRESPONSE])
             bytesPackageCopy = bytesPackageCopy[SIZEOFRESPONSE:]
+
+        elif typeOfPackage == 'log':
+            contentOfPackage = bytes2log(bytesPackageCopy[:SIZEOFLOG])
+            bytesPackageCopy = bytesPackageCopy[SIZEOFLOG:]
 
         elif typeOfPackage == 'ack':
             contentOfPackage = 'ok'
