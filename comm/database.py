@@ -4,7 +4,7 @@ import struct
 
 from pymongo import MongoClient
 
-from definitions import SIZEOFDATA, SIZEOFRESPONSE, SIZEOFACK
+import definitions as d
 
 
 def getTypeOfPackage(package):
@@ -25,7 +25,7 @@ def bytes2measures(bytesPackage):
     measures = []
 
     for i in range(nbOfMeasures):
-        actualMeasure = bytesPackageCopy[i*(SIZEOFDATA-4):(i+1)*(SIZEOFDATA-4)]
+        actualMeasure = bytesPackageCopy[i*(d.SIZEOFDATA-4):(i+1)*(d.SIZEOFDATA-4)]
         unpackedMeasure = struct.unpack('ffffffff', actualMeasure)
         newMeasure = {}
         newMeasure['timestamp'] = unpackedMeasure[0]
@@ -64,20 +64,20 @@ def getPackagesFromBytes(bytesPackage):
 
         if typeOfPackage == 'data':
             numberOfMeasures = bytesPackageCopy[1]
-            contentOfPackage = bytes2measures(bytesPackageCopy[:4+(SIZEOFDATA-4)*numberOfMeasures])
-            bytesPackageCopy = bytesPackageCopy[4+(SIZEOFDATA-4)*numberOfMeasures:]
+            contentOfPackage = bytes2measures(bytesPackageCopy[:4+(d.SIZEOFDATA-4)*numberOfMeasures])
+            bytesPackageCopy = bytesPackageCopy[4+(d.SIZEOFDATA-4)*numberOfMeasures:]
 
         elif typeOfPackage == 'res':
-            contentOfPackage = bytes2config(bytesPackageCopy[:SIZEOFRESPONSE])
-            bytesPackageCopy = bytesPackageCopy[SIZEOFRESPONSE:]
+            contentOfPackage = bytes2config(bytesPackageCopy[:d.SIZEOFRESPONSE])
+            bytesPackageCopy = bytesPackageCopy[d.SIZEOFRESPONSE:]
 
         elif typeOfPackage == 'log':
-            contentOfPackage = bytes2log(bytesPackageCopy[:SIZEOFLOG])
-            bytesPackageCopy = bytesPackageCopy[SIZEOFLOG:]
+            contentOfPackage = bytes2log(bytesPackageCopy[:d.SIZEOFLOG])
+            bytesPackageCopy = bytesPackageCopy[d.SIZEOFLOG:]
 
         elif typeOfPackage == 'ack':
             contentOfPackage = 'ok'
-            bytesPackageCopy = bytesPackageCopy[SIZEOFACK:]
+            bytesPackageCopy = bytesPackageCopy[d.SIZEOFACK:]
 
         packages.append({'type_': typeOfPackage, 
                          'content': contentOfPackage})
