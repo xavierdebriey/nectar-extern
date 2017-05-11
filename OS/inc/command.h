@@ -29,9 +29,9 @@ typedef struct {
 } Command;
 
 void executeCommand();
-uint32_t add_command(Command new_command);
-Command* get_command();
-uint32_t get_command_size();
-void reset_commands();
+uint32_t addCommand2Queue(Command new_command);
+Command* getActualCommand();
+uint32_t getNumberOfCommands();
+void resetCommandQueue();
 
 #endif /* COMMAND_H_ */

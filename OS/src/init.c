@@ -12,26 +12,57 @@
 #include "sleep.h"
 #include "config.h"
 #include "simulation.h"
+#include "communication.h"
+
+TIM_HandleTypeDef          sleepTimerHandle;
+TIM_HandleTypeDef          soundSampleTimerHandle;
+ADC_HandleTypeDef          soundADCHandle;
+SPI_HandleTypeDef          balanceSpiHandle;
+
+uint32_t sampleCounter = 0;
+uint32_t counter_time = 0;
+uint32_t checker = 20000;
+
+/*
+Sleep timer
+*/
+
+void initSleepTimer() {
+  uint32_t prescaler = (uint32_t) ((HAL_RCC_GetSysClockFreq() / 500) - 1);
+
+  sleepTimerHandle.Instance = TIM6;
+
+  sleepTimerHandle.Init.Period = (500 * TIMESTEP) - 1;
+  sleepTimerHandle.Init.Prescaler = prescaler;
+  sleepTimerHandle.Init.ClockDivision = 0;
+  sleepTimerHandle.Init.CounterMode = TIM_COUNTERMODE_UP;
+
+  HAL_TIM_Base_Init(&sleepTimerHandle);
+}
+
+/*
+TIM related functions
+*/
 
 void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim)
 {
-	if(htim == &TimHandle2)
+	if(htim == &soundSampleTimerHandle)
 	{
 		TIMTRAITEMENT_CLK_ENABLE();
 		HAL_NVIC_SetPriority(TIMTRAITEMENT_IRQn, 0, 0);
 		HAL_NVIC_EnableIRQ(TIMTRAITEMENT_IRQn);
 	}
-	if(htim == &tim_handle)
+	if(htim == &sleepTimerHandle)
 	{
-	__HAL_RCC_TIM6_CLK_ENABLE();
-	HAL_NVIC_SetPriority(TIM6_DAC_IRQn, 1, 0);
-	HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
+  	__HAL_RCC_TIM6_CLK_ENABLE();
+  	HAL_NVIC_SetPriority(TIM6_DAC_IRQn, 1, 0);
+  	HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
 	}
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	if(htim == &tim_handle)
+	if(htim == &sleepTimerHandle)
 	{
 		if (counter_time < measure_time - 1) {
 			counter_time++;
@@ -42,40 +73,47 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		}
 	}
 
-	if(htim == &TimHandle2)
+	if(htim == &soundSampleTimerHandle)
 	{
-		if(HAL_ADC_Start(&AdcHandle) != HAL_OK)
+		if(HAL_ADC_Start(&soundADCHandle) != HAL_OK)
 		{
 			errorHandler();
 		}
-		if(HAL_ADC_PollForConversion(&AdcHandle, 200000) != HAL_OK)
+		if(HAL_ADC_PollForConversion(&soundADCHandle, 200000) != HAL_OK)
 		{
 			errorHandler();
 		}
-		uwADCxConvertedValue = HAL_ADC_GetValue(&AdcHandle);
+		uwADCxConvertedValue = HAL_ADC_GetValue(&soundADCHandle);
 
-		if(HAL_ADC_Stop(&AdcHandle) != HAL_OK)
+		if(HAL_ADC_Stop(&soundADCHandle) != HAL_OK)
 		{
 			errorHandler();
 		}
 
 		adcWait = 1;
 
-		if(cnt>nbPoint - 2)
+		if(sampleCounter >= NBSAMPLES - 1)
 		{
-		  if(HAL_TIM_Base_Stop_IT(&TimHandle2) != HAL_OK)
+		  if(HAL_TIM_Base_Stop_IT(&soundSampleTimerHandle) != HAL_OK)
 		  {
 			  /* Starting Error */
 			  errorHandler();
 		  }
+      sampleCounter = 0;
 		}
-		cnt++;
+    else {
+      sampleCounter++;
+    }
 	}
 }
 
+/*
+ADC related functions
+*/
+
 void HAL_ADC_MspInit(ADC_HandleTypeDef *hadc)
 {
-  GPIO_InitTypeDef                 GPIO_InitStruct;
+  GPIO_InitTypeDef                 internGPIOInitStruct;
 
   /*##-1- Enable peripherals and GPIO Clocks #################################*/
   /* Enable GPIO clock ****************************************/
@@ -85,15 +123,19 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef *hadc)
 
   /*##- 2- Configure peripheral GPIO #########################################*/
   /* ADC3 Channel8 GPIO pin configuration */
-  GPIO_InitStruct.Pin = GPIO_PIN_0;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  internGPIOInitStruct.Pin = GPIO_PIN_0;
+  internGPIOInitStruct.Mode = GPIO_MODE_ANALOG;
+  internGPIOInitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &internGPIOInitStruct);
 }
+
+/*
+I2C related functions
+*/
 
 void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
 {
-  GPIO_InitTypeDef  GPIO_InitStruct;
+  GPIO_InitTypeDef  internGPIOInitStruct;
 
   /*##-1- Enable peripherals and GPIO Clocks #################################*/
   /* Enable GPIO TX/RX clock */
@@ -104,19 +146,19 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
 
   /*##-2- Configure peripheral GPIO ##########################################*/
   /* I2C TX GPIO pin configuration  */
-  GPIO_InitStruct.Pin       = I2Cx_SCL_PIN;
-  GPIO_InitStruct.Mode      = GPIO_MODE_AF_OD;
-  GPIO_InitStruct.Pull      = GPIO_PULLUP;
-  GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_HIGH  ;
-  GPIO_InitStruct.Alternate = I2Cx_SCL_AF;
+  internGPIOInitStruct.Pin       = I2Cx_SCL_PIN;
+  internGPIOInitStruct.Mode      = GPIO_MODE_AF_OD;
+  internGPIOInitStruct.Pull      = GPIO_PULLUP;
+  internGPIOInitStruct.Speed     = GPIO_SPEED_FREQ_HIGH  ;
+  internGPIOInitStruct.Alternate = I2Cx_SCL_AF;
 
-  HAL_GPIO_Init(I2Cx_SCL_GPIO_PORT, &GPIO_InitStruct);
+  HAL_GPIO_Init(I2Cx_SCL_GPIO_PORT, &internGPIOInitStruct);
 
   /* I2C RX GPIO pin configuration  */
-  GPIO_InitStruct.Pin = I2Cx_SDA_PIN;
-  GPIO_InitStruct.Alternate = I2Cx_SDA_AF;
+  internGPIOInitStruct.Pin = I2Cx_SDA_PIN;
+  internGPIOInitStruct.Alternate = I2Cx_SDA_AF;
 
-  HAL_GPIO_Init(I2Cx_SDA_GPIO_PORT, &GPIO_InitStruct);
+  HAL_GPIO_Init(I2Cx_SDA_GPIO_PORT, &internGPIOInitStruct);
 
   /*##-3- Configure the NVIC for I2C #########################################*/
   /* NVIC for I2C1 */
@@ -148,9 +190,12 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef *hi2c)
   HAL_NVIC_DisableIRQ(I2Cx_IRQn);
 }
 
+/*
+BalanceSPI related functions
+*/
 void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
 {
-  GPIO_InitTypeDef  GPIO_InitStruct;
+  GPIO_InitTypeDef  internGPIOInitStruct;
 
   /*##-1- Enable peripherals and GPIO Clocks #################################*/
   /* Enable GPIO TX/RX clock */
@@ -162,25 +207,25 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
 
   /*##-2- Configure peripheral GPIO ##########################################*/
   /* SPI SCK GPIO pin configuration  */
-  GPIO_InitStruct.Pin       = SPIx_SCK_PIN;
-  GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull      = GPIO_NOPULL;
-  GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_HIGH  ;
-  GPIO_InitStruct.Alternate = SPIx_SCK_AF;
+  internGPIOInitStruct.Pin       = SPIx_SCK_PIN;
+  internGPIOInitStruct.Mode      = GPIO_MODE_AF_PP;
+  internGPIOInitStruct.Pull      = GPIO_NOPULL;
+  internGPIOInitStruct.Speed     = GPIO_SPEED_FREQ_HIGH  ;
+  internGPIOInitStruct.Alternate = SPIx_SCK_AF;
 
-  HAL_GPIO_Init(SPIx_SCK_GPIO_PORT, &GPIO_InitStruct);
+  HAL_GPIO_Init(SPIx_SCK_GPIO_PORT, &internGPIOInitStruct);
 
   /* SPI MISO GPIO pin configuration  */
-  GPIO_InitStruct.Pin = SPIx_MISO_PIN;
-  GPIO_InitStruct.Alternate = SPIx_MISO_AF;
+  internGPIOInitStruct.Pin = SPIx_MISO_PIN;
+  internGPIOInitStruct.Alternate = SPIx_MISO_AF;
 
-  HAL_GPIO_Init(SPIx_MISO_GPIO_PORT, &GPIO_InitStruct);
+  HAL_GPIO_Init(SPIx_MISO_GPIO_PORT, &internGPIOInitStruct);
 
   /* SPI MOSI GPIO pin configuration  */
-  GPIO_InitStruct.Pin = SPIx_MOSI_PIN;
-  GPIO_InitStruct.Alternate = SPIx_MOSI_AF;
+  internGPIOInitStruct.Pin = SPIx_MOSI_PIN;
+  internGPIOInitStruct.Alternate = SPIx_MOSI_AF;
 
-  HAL_GPIO_Init(SPIx_MOSI_GPIO_PORT, &GPIO_InitStruct);
+  HAL_GPIO_Init(SPIx_MOSI_GPIO_PORT, &internGPIOInitStruct);
 
   /*##-3- Configure the NVIC for SPI #########################################*/
   /* NVIC for SPI */
@@ -191,15 +236,15 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
 void Spi_Pin_Init(void)
 {
 	//Pin 007
-  GPIO_InitTypeDef   GPIO_InitStructure;
+  GPIO_InitTypeDef   internGPIOInitStructure;
 
   /* Enable GPIOB clock */
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /* Configure PB7 pin as input floating */
-  GPIO_InitStructure.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStructure.Pull = GPIO_NOPULL;
-  GPIO_InitStructure.Pin = GPIO_PIN_7;
-  GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH  ;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStructure);
+  internGPIOInitStructure.Mode = GPIO_MODE_INPUT;
+  internGPIOInitStructure.Pull = GPIO_NOPULL;
+  internGPIOInitStructure.Pin = GPIO_PIN_7;
+  internGPIOInitStructure.Speed = GPIO_SPEED_FREQ_HIGH  ;
+  HAL_GPIO_Init(GPIOB, &internGPIOInitStructure);
 }

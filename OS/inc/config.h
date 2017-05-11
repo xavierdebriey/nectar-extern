@@ -36,10 +36,12 @@ extern float cc3[2*ORDRE+1];
 #define FREQ_LOW 1
 #define FREQ_HIGH 500
 
+#define NBSAMPLES 1000
+
 void start_system();
 void reset_timestamp();
 
-void load_config(void);
+void initConfig(void);
 void change_measure_time(uint32_t new_mt);
 void change_sending_time(uint32_t new_st);
 void change_freqs(uint32_t new_fs[3]);

@@ -8,13 +8,15 @@
 #ifndef SLEEP_H_
 #define SLEEP_H_
 
+#define TIMESTEP 5
+
 extern uint32_t counter;
 
-void initTimer(void);
-void startTimer(void);
-void stopTimer(void);
-void sleep_mode(void);
-void wakeup_mode(void);
-void update_timestamp(void);
+void startSleepTimer(void);
+void stopSleepTimer(void);
+void miniSpleepMode(void);
+void sleepMode(void);
+void wakeupMode(void);
+void updateTimestamp(void);
 
 #endif /* SLEEP_H_ */

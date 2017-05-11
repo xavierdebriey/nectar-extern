@@ -11,6 +11,7 @@
 #include "take_measures.h"
 #include "simulation.h"
 
+#include "init.h"
 #include "filesystem.h"
 #include "config.h"
 #include "sleep.h"
@@ -19,7 +20,6 @@
 
 #include "stm32l0xx.h"
 #include "stm32l0538_discovery.h"
-#include "stm32l0538_discovery_epd.h"
 
 static void SystemClock_Config(void);
 
@@ -29,42 +29,33 @@ int main(void)
 	SystemClock_Config();
 
 	// signal leds init
-//	BSP_LED_Init(LED3);
-//	BSP_LED_Init(LED4);
+	BSP_LED_Init(LED3); // not necessary, to pruned
+	BSP_LED_Init(LED4); // not necessary, to pruned
 
 	// init preripherals
-	load_config();
+	initConfig();
 	initCommSystem();
-	initTimer();
-
-	// begin receive commands
-	recvData();
+	initSleepTimer();
 
   while(1){
-    sleep_mode();
-    wakeup_mode();
-    HAL_Delay(100);
-    // For commands received before measures
-    if (get_command_size() > 0) {
+    sleepMode();
+    wakeupMode();
+    HAL_Delay(100); // for more robusteness
+
+    // Commands have the priority at the beginning
+    while (getNumberOfCommands() > 0) {
       executeCommand();
-      recvData();
     }
+
     if (run) {
       if (measure_flag == 1) {
-        update_timestamp();
         take_measures();
       }
       if (nbData() >= sending_time) {
         sendAllData();
       }
     }
-    // For commands received after measures
-    while (get_command_size() > 0) {
-      executeCommand();
-      recvData();
-    }
   }
-
 }
 
 /**

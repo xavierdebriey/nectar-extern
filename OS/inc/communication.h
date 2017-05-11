@@ -20,6 +20,7 @@ Communication_Status recvData();
 Communication_Status sendData(uint8_t *pData, uint16_t size);
 void sendAllData(void);
 void sendResponse();
-void sendAck();
+void sendLog(char* text2log, int arg);
+void sendACK();
 
 #endif /* COMMUNICATION_H_ */

@@ -6,13 +6,16 @@
 #define __INIT_H
 
 #include "stm32l0xx_hal.h"
-#include "stm32l0538_discovery.h"
 
-TIM_HandleTypeDef    			tim_handle;
-TIM_HandleTypeDef    			TimHandle2;
-ADC_HandleTypeDef           	AdcHandle;
-SPI_HandleTypeDef 				SpiHandle;
+extern TIM_HandleTypeDef    			sleepTimerHandle;
+extern TIM_HandleTypeDef    			soundSampleTimerHandle;
+extern ADC_HandleTypeDef           		soundADCHandle;
+extern SPI_HandleTypeDef 				balanceSpiHandle;
 
+extern uint32_t checker;
+extern uint32_t sampleCounter;
+
+void initSleepTimer(void);
 void Spi_Pin_Init(void);
 
 

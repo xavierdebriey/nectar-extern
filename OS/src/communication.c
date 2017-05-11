@@ -31,7 +31,8 @@ Communication_Status init_xbee();
 
 Communication_Status initCommSystem() {
 	if (init_uart() != COMM_OK) return COMM_ERROR;
-//	if (init_xbee() != COMM_OK) return COMM_ERROR;
+//	if (init_xbee() != COMM_OK) return COMM_ERROR; // for a future version ..
+	recvData(); // start to recv commands
 	return COMM_OK;
 }
 
@@ -81,7 +82,7 @@ Communication_Status recvData() {
 	if (uart_ready != 1) {
 		return COMM_ERROR;
 	}
-
+	
 	// Recv the data
 	if (HAL_UART_Receive_IT(&uart, (uint8_t*) &data, sizeof(Command)) != HAL_OK) return COMM_ERROR;
 	else return COMM_OK;
@@ -101,28 +102,35 @@ Communication_Status sendData(uint8_t *pData, uint16_t size) {
 void sendAllData() {
 	Data* data;
 	uint8_t nb_data = nbData();
-	sendData((uint8_t*) "d", 1);
+	sendData((uint8_t*) "dat", 3);
 	sendData(&nb_data, 1);
-	sendData((uint8_t*) "b", 1);
 	data = readData();
 	while(data != NULL) {
 		sendData((uint8_t*) data, sizeof(Data));
 		data = readData();
 	}
-	sendData((uint8_t*) "e", 1);
+	sendData((uint8_t*) "\n\n", 2);
 }
 
 void sendResponse() {
-	sendData((uint8_t*) "r", 1);
+	sendData((uint8_t*) "rep", 3);
 	sendData((uint8_t*) &(measure_time), 4);
 	sendData((uint8_t*) &(sending_time), 4);
 	sendData((uint8_t*) &(freqs), 12);
-	sendData((uint8_t*) "e", 1);
+	sendData((uint8_t*) "\n\n", 2);
+}
+
+void sendLog(char* text2log, int arg) {
+	char str2send[100] = {0};
+	sprintf(str2send, "%s %d", text2log, arg);
+	sendData((uint8_t*) "log", 3);
+	sendData((uint8_t*) str2send, strlen(str2send));
+	sendData((uint8_t*) "\n\n", 2);
 }
 
 void sendACK() {
-	sendData((uint8_t*) "a", 1);
-	sendData((uint8_t*) "e", 1);
+	sendData((uint8_t*) "ack", 3);
+	sendData((uint8_t*) "\n\n", 2);
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *uart_handle) {
@@ -130,7 +138,8 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *uart_handle) {
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *uart_handle) {
-	add_command(data);
+	addCommand2Queue(data);
+	recvData();
 }
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *uart_handle) {

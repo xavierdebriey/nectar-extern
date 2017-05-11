@@ -15,15 +15,17 @@
 #define I2C_ADDRESS				0x27
 #define I2C_TIMING_100KHZ       0x10A13E56
 
-//extern uint32_t measure_flag;
+extern uint32_t measure_flag;
 extern __IO uint32_t uwADCxConvertedValue;
 extern int adcWait;
-extern int cnt;
-extern int nbPoint;
 
 void take_measures(void);
+float measureBalance();
 
 /* Fonction d'handling d'erreur */
 void errorHandler(void);
+void takeBalance(uint8_t* buffer);
+void initSoundSampleTimer(void);
+void initSoundADC(void);
 
 #endif

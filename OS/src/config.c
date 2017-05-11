@@ -33,21 +33,20 @@ float cc3[2*ORDRE+1];
 
 void start_system() {
 	run = 1;
-	startTimer();
+	startSleepTimer();
 }
 
 void reset_timestamp() {
 	timestamp = 0.0;
 }
 
-void load_config() {
+void initConfig() {
 	measure_time = 1;
 	sending_time = 1;
 	freqs[0] = 250;
 	freqs[1] = 350;
 	freqs[2] = 450;
 	load_coefficient(freqs[0], freqs[1], freqs[2]);
-	take_measures();
 }
 
 void change_measure_time(uint32_t new_mt) {

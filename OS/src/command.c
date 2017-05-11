@@ -27,7 +27,7 @@ uint32_t check_bounds(uint32_t arg, uint32_t low_bound, uint32_t high_bound) {
 
 void executeCommand() {
 	Command* command;
-	command = get_command();
+	command = getActualCommand();
 
 	if (command->header == START) {
 		resetData();
@@ -80,14 +80,14 @@ void executeCommand() {
 	}
 	else if (command->header == STOP) {
 		run = 0;
-		stopTimer();
+		stopSleepTimer();
 	}
 	else if (command->header == RSTTIMESTAMP) {
 		reset_timestamp();
 	}
 }
 
-uint32_t add_command(Command new_command) {
+uint32_t addCommand2Queue(Command new_command) {
 	if (command != NB_COMMANDS) {
 		commands[command] = new_command;
 		command++;
@@ -98,7 +98,7 @@ uint32_t add_command(Command new_command) {
 	}
 }
 
-Command* get_command() {
+Command* getActualCommand() {
 	if (command != 0) {
 		command--;
 		return &commands[command];
@@ -108,10 +108,10 @@ Command* get_command() {
 	}
 }
 
-uint32_t get_command_size() {
+uint32_t getNumberOfCommands() {
 	return command;
 }
 
-void reset_commands() {
+void resetCommandQueue() {
 	command = 0;
 }

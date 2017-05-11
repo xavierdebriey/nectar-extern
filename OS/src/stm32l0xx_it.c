@@ -18,7 +18,6 @@
 #include "init.h"
 
 extern UART_HandleTypeDef uart;
-extern TIM_HandleTypeDef tim_handle;
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -50,17 +49,17 @@ void USART1_IRQHandler(void)
   HAL_UART_IRQHandler(&uart);
 }
 
+void TIM2_IRQHandler(void)
+{
+  HAL_TIM_IRQHandler(&soundSampleTimerHandle);
+}
+
 void TIM6_IRQHandler(void)
 {
-  HAL_TIM_IRQHandler(&tim_handle);
+  HAL_TIM_IRQHandler(&sleepTimerHandle);
 }
 
-void SPIx_IRQHandler(void)
+void SPI2_IRQHandler(void)
 {
-  HAL_SPI_IRQHandler(&SpiHandle);
-}
-
-void TIMx_IRQHandler(void)
-{
-  HAL_TIM_IRQHandler(&TimHandle2);
+  HAL_SPI_IRQHandler(&balanceSpiHandle);
 }
