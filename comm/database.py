@@ -22,7 +22,6 @@ def getTypeOfPackage(package):
 def bytes2measures(bytesPackage):
     bytesPackageCopy = bytesPackage
     nbOfMeasures = bytesPackageCopy[1]
-    bytesPackageCopy = bytesPackageCopy[3:-1]
 
     measures = []
 
@@ -45,7 +44,7 @@ def bytes2config(bytesPackage):
 
     config = {}
 
-    configList = struct.unpack('IIIII', bytesPackageCopy[1:-1]) 
+    configList = struct.unpack('IIIII', bytesPackageCopy) 
 
     config['measure'] = configList[0]
     config['sending'] = configList[1]
@@ -54,7 +53,7 @@ def bytes2config(bytesPackage):
     return config
 
 def bytes2log(bytesPackage):
-    bytesPackageCopy = bytesPackage[1:-1]
+    bytesPackageCopy = bytesPackage
     return bytesPackageCopy.decode("ascii")
 
 def blen(bytesPackage):
@@ -70,24 +69,23 @@ def getPackagesFromBytes(bytesPackage):
     while len(bytesPackageCopy) > 0:
         typeOfPackage = getTypeOfPackage(bytesPackageCopy)
         lenOfPackage = blen(bytesPackageCopy)
+        bytes2translate = bytesPackageCopy[3:lenOfPackage]
+        bytesPackageCopy = bytesPackageCopy[lenOfPackage+2:]
 
         if typeOfPackage == 'data':
-            numberOfMeasures = bytesPackageCopy[3]
-            contentOfPackage = bytes2measures(bytesPackageCopy[4:lenOfPackage])
+            contentOfPackage = bytes2measures(bytes2translate)
 
         elif typeOfPackage == 'res':
-            contentOfPackage = bytes2config(bytesPackageCopy[3:lenOfPackage])
+            contentOfPackage = bytes2config(bytes2translate)
 
         elif typeOfPackage == 'log':
-            contentOfPackage = bytes2log(bytesPackageCopy[3:lenOfPackage])
+            contentOfPackage = bytes2log(bytes2translate)
 
         elif typeOfPackage == 'ack':
             contentOfPackage = 'ok'
 
         packages.append({'type_': typeOfPackage, 
                          'content': contentOfPackage})
-
-        bytesPackageCopy = bytesPackageCopy[lenOfPackage+3:]
 
     return packages
 
