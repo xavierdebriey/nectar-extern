@@ -73,13 +73,13 @@ def getPackagesFromBytes(bytesPackage):
 
         if typeOfPackage == 'data':
             numberOfMeasures = bytesPackageCopy[3]
-            contentOfPackage = bytes2measures(bytesPackageCopy[:lenOfPackage])
+            contentOfPackage = bytes2measures(bytesPackageCopy[4:lenOfPackage])
 
         elif typeOfPackage == 'res':
-            contentOfPackage = bytes2config(bytesPackageCopy[:lenOfPackage])
+            contentOfPackage = bytes2config(bytesPackageCopy[3:lenOfPackage])
 
         elif typeOfPackage == 'log':
-            contentOfPackage = bytes2log(bytesPackageCopy[:lenOfPackage])
+            contentOfPackage = bytes2log(bytesPackageCopy[3:lenOfPackage])
 
         elif typeOfPackage == 'ack':
             contentOfPackage = 'ok'
