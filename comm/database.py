@@ -87,7 +87,7 @@ def getPackagesFromBytes(bytesPackage):
         packages.append({'type_': typeOfPackage, 
                          'content': contentOfPackage})
 
-        bytesPackageCopy = bytesPackageCopy[lenOfPackage:]
+        bytesPackageCopy = bytesPackageCopy[lenOfPackage+3:]
 
     return packages
 
