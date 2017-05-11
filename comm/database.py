@@ -21,7 +21,8 @@ def getTypeOfPackage(package):
 
 def bytes2measures(bytesPackage):
     bytesPackageCopy = bytesPackage
-    nbOfMeasures = bytesPackageCopy[1]
+    nbOfMeasures = bytesPackageCopy[0]
+    bytesPackageCopy = bytesPackageCopy[1:]
 
     measures = []
 
