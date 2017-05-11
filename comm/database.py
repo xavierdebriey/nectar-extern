@@ -8,13 +8,13 @@ import definitions as d
 
 
 def getTypeOfPackage(package):
-    if chr(package[:3]) == 'dat':
+    if package[:3].decode("ascii") == 'dat':
         return 'data'
-    elif chr(package[:3]) == 'rep':
+    elif package[:3].decode("ascii") == 'rep':
         return 'res'
-    elif chr(package[:3]) == 'log':
+    elif package[:3].decode("ascii") == 'log':
         return 'log'
-    elif chr(package[:3]) == 'ack':
+    elif package[:3].decode("ascii") == 'ack':
         return 'ack'
     else:
         return None
@@ -59,7 +59,7 @@ def bytes2log(bytesPackage):
 
 def blen(bytesPackage):
     for i in range(len(bytesPackage)-1):
-        if bytesPackage[i] == '\n' and bytesPackage[i+1] == '\n':
+        if chr(bytesPackage[i]) == '\n' and chr(bytesPackage[i+1]) == '\n':
             return i
     return 0
 
