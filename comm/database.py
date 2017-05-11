@@ -8,14 +8,16 @@ import definitions as d
 
 
 def getTypeOfPackage(package):
-    if chr(package[0]) == 'd':
+    if chr(package[:3]) == 'dat':
         return 'data'
-    elif chr(package[0]) == 'r':
+    elif chr(package[:3]) == 'rep':
         return 'res'
-    elif chr(package[0]) == 'l':
+    elif chr(package[:3]) == 'log':
         return 'log'
-    elif chr(package[0]) == 'a':
+    elif chr(package[:3]) == 'ack':
         return 'ack'
+    else:
+        return None
 
 def bytes2measures(bytesPackage):
     bytesPackageCopy = bytesPackage
@@ -25,7 +27,7 @@ def bytes2measures(bytesPackage):
     measures = []
 
     for i in range(nbOfMeasures):
-        actualMeasure = bytesPackageCopy[i*(d.SIZEOFDATA-4):(i+1)*(d.SIZEOFDATA-4)]
+        actualMeasure = bytesPackageCopy[i*(d.SIZEOFDATA):(i+1)*(d.SIZEOFDATA)]
         unpackedMeasure = struct.unpack('ffffffff', actualMeasure)
         newMeasure = {}
         newMeasure['timestamp'] = unpackedMeasure[0]
@@ -55,32 +57,37 @@ def bytes2log(bytesPackage):
     bytesPackageCopy = bytesPackage[1:-1]
     return bytesPackageCopy.decode("ascii")
 
+def blen(bytesPackage):
+    for i in range(len(bytesPackage)-1):
+        if bytesPackage[i] == '\n' and bytesPackage[i+1] == '\n':
+            return i
+    return 0
+
 def getPackagesFromBytes(bytesPackage):
     bytesPackageCopy = bytesPackage
     packages = []
 
     while len(bytesPackageCopy) > 0:
         typeOfPackage = getTypeOfPackage(bytesPackageCopy)
+        lenOfPackage = blen(bytesPackageCopy)
 
         if typeOfPackage == 'data':
-            numberOfMeasures = bytesPackageCopy[1]
-            contentOfPackage = bytes2measures(bytesPackageCopy[:4+(d.SIZEOFDATA-4)*numberOfMeasures])
-            bytesPackageCopy = bytesPackageCopy[4+(d.SIZEOFDATA-4)*numberOfMeasures:]
+            numberOfMeasures = bytesPackageCopy[3]
+            contentOfPackage = bytes2measures(bytesPackageCopy[:lenOfPackage])
 
         elif typeOfPackage == 'res':
-            contentOfPackage = bytes2config(bytesPackageCopy[:d.SIZEOFRESPONSE])
-            bytesPackageCopy = bytesPackageCopy[d.SIZEOFRESPONSE:]
+            contentOfPackage = bytes2config(bytesPackageCopy[:lenOfPackage])
 
         elif typeOfPackage == 'log':
-            contentOfPackage = bytes2log(bytesPackageCopy[:d.SIZEOFLOG])
-            bytesPackageCopy = bytesPackageCopy[d.SIZEOFLOG:]
+            contentOfPackage = bytes2log(bytesPackageCopy[:lenOfPackage])
 
         elif typeOfPackage == 'ack':
             contentOfPackage = 'ok'
-            bytesPackageCopy = bytesPackageCopy[d.SIZEOFACK:]
 
         packages.append({'type_': typeOfPackage, 
                          'content': contentOfPackage})
+
+        bytesPackageCopy = bytesPackageCopy[lenOfPackage:]
 
     return packages
 

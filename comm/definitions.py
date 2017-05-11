@@ -11,10 +11,7 @@ Design 4, Université Laval, Aut. 2016
 Database
 """
 
-SIZEOFDATA = 36
-SIZEOFRESPONSE = 22
-SIZEOFLOG = 42
-SIZEOFACK = 2
+SIZEOFDATA = 32
 
 """
 Communication
