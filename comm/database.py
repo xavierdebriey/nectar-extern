@@ -69,6 +69,10 @@ def getPackagesFromBytes(bytesPackage):
     while len(bytesPackageCopy) > 0:
         typeOfPackage = getTypeOfPackage(bytesPackageCopy)
         lenOfPackage = blen(bytesPackageCopy)
+
+        if lenOfPackage == 0:
+            break
+
         bytes2translate = bytesPackageCopy[3:lenOfPackage]
         bytesPackageCopy = bytesPackageCopy[lenOfPackage+2:]
 
@@ -87,7 +91,7 @@ def getPackagesFromBytes(bytesPackage):
         packages.append({'type_': typeOfPackage, 
                          'content': contentOfPackage})
 
-    return packages
+    return packages, bytesPackageCopy
 
 def openMongoDB(nameOfDatabase):
     mongoClient = MongoClient()

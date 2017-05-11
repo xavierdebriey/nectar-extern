@@ -53,6 +53,7 @@ class Connect2BeeOS:
         self.lock.release()
 
     def recvData_(self):
+        old = []
         while 1:
             raw = self.s.recv(self.buffer_size)
             if not self.enable_:
@@ -60,7 +61,7 @@ class Connect2BeeOS:
             if len(raw) == 0:
                 self.reconnect()
             else:
-                recvs = getPackagesFromBytes(raw)
+                recvs, old = getPackagesFromBytes(old + raw)
                 for recv in recvs:
                     if recv['type_'] == 'data':
                         self.data_queue.put(recv['content'])
