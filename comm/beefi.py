@@ -53,7 +53,7 @@ class Connect2BeeOS:
         self.lock.release()
 
     def recvData_(self):
-        old = []
+        old = bytearray([])
         while 1:
             raw = self.s.recv(self.buffer_size)
             if not self.enable_:
